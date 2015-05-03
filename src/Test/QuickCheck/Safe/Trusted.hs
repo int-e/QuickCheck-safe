@@ -1,6 +1,7 @@
 -- Author: Bertram Felgenhauer
 -- License: MIT
 
+{-# OPTIONS_GHC -fno-full-laziness #-}
 {-# LANGUAGE Trustworthy #-}
 
 module Test.QuickCheck.Safe.Trusted (
