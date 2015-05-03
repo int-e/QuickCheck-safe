@@ -32,7 +32,7 @@ source-repository head
 library
   hs-source-dirs:    src
   build-depends:
-    QuickCheck >= 2.7 && < 2.9,
+    QuickCheck >= 2.7.3 && < 2.9,
     base >= 4.6 && < 5
   exposed-modules:
     Test.QuickCheck.Safe
