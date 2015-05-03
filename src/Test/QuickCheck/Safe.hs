@@ -154,7 +154,8 @@ forAll gen = forAllShrink gen (const [])
 
 -- | Adjust testcase sizes. Cf. 'Test.QuickCheck.mapSize'.
 mapSize :: STestable prop => (Int -> Int) -> prop -> SProperty
-mapSize f = MkSProperty . scale f . unSProperty . sProperty
+mapSize f = MkSProperty . scale f . unSProperty . sProperty where
+    scale f a = sized (\n -> resize (f n) a)
 
 -- Other combinators that may be considered:
 
