@@ -180,13 +180,13 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
             return Success{
                 numTests = pass,
                 labels = [],
-                output = "+++ OK, passed " ++ show pass ++ "tests.\n"
+                output = "+++ OK, passed " ++ show pass ++ " tests.\n"
              }
         | disc > (maxDiscardRatio args - 1) * maxSuccess args =
             return GaveUp{
                 numTests = pass,
                 labels = [],
-                output = "*** Gave up! Passed only " ++ show pass ++ "tests.\n"
+                output = "*** Gave up! Passed only " ++ show pass ++ " tests.\n"
              }
         | otherwise = do
             (seed, _) <- MkGen (,)
