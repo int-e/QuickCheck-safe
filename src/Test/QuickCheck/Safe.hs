@@ -31,6 +31,7 @@ import Test.QuickCheck hiding (
     expectFailure, once, printTestCase, verbose, within,
     quickCheck, quickCheckResult, quickCheckWith, quickCheckWithResult)
 import Test.QuickCheck.Gen (Gen(..))
+import Control.Monad
 
 -- STestable and SProperty are simplified versions of Testable/Property
 class STestable prop where
@@ -90,13 +91,15 @@ prop1 .&&. prop2 = MkSProperty $ do
 prop1 .||. prop2 = MkSProperty $ do
     res1 <- unSProperty . sProperty $ prop1
     res2 <- unSProperty . sProperty $ prop2
-    let merge res1@SFail{ sLabels = lab1, sSmaller = shr1 } =
-            case mapSResultLabels (lab1 ++) res2 of
-                res2'@SFail{ sSmaller = shr2 } ->
-                    res2'{ sSmaller = map merge shr1 ++ shr2 }
-                res2' -> res2'
-        merge res1 = res1
-    return (merge res1)
+    let merge res1@SFail{ sSmaller = shr1 } res2@SFail{ sSmaller = shr2 } =
+            SFail{
+                sLabels = sLabels res1 ++ sLabels res2,
+                sException = sException res1 `mplus` sException res2,
+                sSmaller = map (`merge` res2) shr1 ++ map (res1 `merge`) shr2
+            }
+        merge res1 SFail{} = res1
+        merge SFail{} res2 = res2
+    return $ res1 `merge` res2
 
 -- | Nondeterministic conjunction. Cf. 'Test.QuickCheck.&.'.
 (.&.) :: (STestable prop2, STestable prop1) => prop1 -> prop2 -> SProperty
