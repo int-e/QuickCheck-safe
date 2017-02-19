@@ -1,0 +1,8 @@
+QuickCheck-safe 0.1.0.2
+	* compatibility with QuickCheck 2.9
+
+QuickCheck-safe 0.1.0.1
+	* compatibility with QuickCheck 2.7
+
+QuickCheck-safe 0.1
+	* initial release

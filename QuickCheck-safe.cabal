@@ -1,5 +1,5 @@
 name:                QuickCheck-safe
-version:             0.1.0.1
+version:             0.1.0.2
 synopsis:            Safe reimplementation of QuickCheck's core
 description:
   QuickCheck-safe reimplements the quickCheck functionality with a pure
@@ -20,10 +20,11 @@ license:             MIT
 license-file:        LICENSE
 author:              Bertram Felgenhauer
 maintainer:          Bertram Felgenhauer <int-e@gmx.de>
-copyright:           2015 Bertram Felgenhauer
+copyright:           2015,2017 Bertram Felgenhauer
 category:            Testing
 build-type:          Simple
 cabal-version:       >= 1.10
+extra-source-files:  Changelog
 
 source-repository head
   type:     git
@@ -32,7 +33,7 @@ source-repository head
 library
   hs-source-dirs:    src
   build-depends:
-    QuickCheck >= 2.7.3 && < 2.9,
+    QuickCheck >= 2.7.3 && < 2.10,
     base >= 4.6 && < 5
   exposed-modules:
     Test.QuickCheck.Safe
