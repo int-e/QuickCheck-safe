@@ -6,6 +6,7 @@
 
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE CPP #-}
 
 module Test.QuickCheck.Safe (
     -- * Checking properties
@@ -209,6 +210,9 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
             reason = reason,
             theException = sException res,
             labels = map (\x -> (x, 0)) (sLabels res),
+#if MIN_VERSION_QuickCheck(2,10,0)
+            failingTestCase = sLabels res,
+#endif
             output = "*** Failed! " ++ reason ++
                   " (after " ++ count (pass + 1) "test" ++
                   (if shr > 0 then " and " ++ count shr "shrink" else "") ++
