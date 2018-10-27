@@ -33,6 +33,8 @@ import Test.QuickCheck hiding (
     quickCheck, quickCheckResult, quickCheckWith, quickCheckWithResult)
 import Test.QuickCheck.Gen (Gen(..))
 import Control.Monad
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 -- STestable and SProperty are simplified versions of Testable/Property
 class STestable prop where
@@ -181,13 +183,27 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
         | pass >= maxSuccess args =
             return Success{
                 numTests = pass,
+#if MIN_VERSION_QuickCheck(2,12,0)
+                numDiscarded = disc,
+                labels = M.empty,
+                classes = M.empty,
+                tables = M.empty,
+#else
                 labels = [],
+#endif
                 output = "+++ OK, passed " ++ show pass ++ " tests.\n"
              }
         | disc > (maxDiscardRatio args - 1) * maxSuccess args =
             return GaveUp{
                 numTests = pass,
+#if MIN_VERSION_QuickCheck(2,12,0)
+                numDiscarded = disc,
+                labels = M.empty,
+                classes = M.empty,
+                tables = M.empty,
+#else
                 labels = [],
+#endif
                 output = "*** Gave up! Passed only " ++ show pass ++ " tests.\n"
              }
         | otherwise = do
@@ -196,10 +212,10 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
             case res of
                 SOk -> runTests (pass + 1) disc sizes
                 SDiscard -> runTests pass (disc + 1) sizes
-                SFail{} -> return $ deflate pass 0 0 0 seed size res
+                SFail{} -> return $ deflate pass disc 0 0 0 seed size res
 
-    deflate :: Int -> Int -> Int -> Int -> QCGen -> Int -> SResult -> Result
-    deflate pass !shr !shrT !shrF seed size res@SFail{ sSmaller = [] } =
+    deflate :: Int -> Int -> Int -> Int -> Int -> QCGen -> Int -> SResult -> Result
+    deflate pass disc !shr !shrT !shrF seed size res@SFail{ sSmaller = [] } =
         Failure{
             numTests = pass,
             numShrinks = shr,
@@ -209,9 +225,15 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
             usedSize = size,
             reason = reason,
             theException = sException res,
-            labels = map (\x -> (x, 0)) (sLabels res),
 #if MIN_VERSION_QuickCheck(2,10,0)
             failingTestCase = sLabels res,
+#endif
+#if !MIN_VERSION_QuickCheck(2,12,0)
+            labels = map (\x -> (x, 0)) (sLabels res),
+#else
+            numDiscarded = disc,
+            failingLabels = sLabels res,
+            failingClasses = S.empty,
 #endif
             output = "*** Failed! " ++ reason ++
                   " (after " ++ count (pass + 1) "test" ++
@@ -222,10 +244,10 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
         count i w = show i ++ " " ++ w ++ ['s' | i /= 1]
         reason = maybe "Falsifiable" (\e -> "Exception: '" ++ show e ++ "'") $
             sException res
-    deflate pass shr shrT shrF seed size res@SFail{ sSmaller = res' : rs } =
+    deflate pass disc shr shrT shrF seed size res@SFail{ sSmaller = res' : rs } =
         case res' of
-            SFail{} -> deflate pass (shr + 1) (shrT + shrF) 0 seed size res'
-            _ -> deflate pass shr shrT (shrF + 1) seed size res{ sSmaller = rs }
+            SFail{} -> deflate pass disc (shr + 1) (shrT + shrF) 0 seed size res'
+            _ -> deflate pass disc shr shrT (shrF + 1) seed size res{ sSmaller = rs }
 
     sizes :: [Int]
     sizes = cycle [0..maxSize args]
