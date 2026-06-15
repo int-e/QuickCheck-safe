@@ -235,6 +235,9 @@ quickCheckWithResult args seed prop = unGen (runTests 0 0 sizes) seed' 0 where
             failingLabels = sLabels res,
             failingClasses = S.empty,
 #endif
+#if MIN_VERSION_QuickCheck(2,16,0)
+            witnesses = [],
+#endif
             output = "*** Failed! " ++ reason ++
                   " (after " ++ count (pass + 1) "test" ++
                   (if shr > 0 then " and " ++ count shr "shrink" else "") ++
